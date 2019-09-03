@@ -1,3 +1,7 @@
+### This code can get a RFI-rate for each channel in a fits file, it will finally output the RFI rate of each fits file    ###
+###      and plot the total RFI for data in a whole day.                                                                   ###                                 ###
+### "path" is the lacoation of fits file, and "yemo" is the folder you want to built in your account.                      ###
+### A usage can be like " python get_RFI_rate.py /data31/1004/FRB121102/20190830/ RFI_20190830 "                           ###
 import numpy as np
 import linecache
 import matplotlib
@@ -20,24 +24,18 @@ from matplotlib.patches import Rectangle
 
 secperday = 3600 * 24
 path=sys.argv[1]
-#day=sys.argv[3]
 yemo=sys.argv[2]
 os.environ['path']=str(path)
 os.environ['yemo']=str(yemo)
-#os.environ['day']=str(day)
-#os.system('mkdir -p /data1/home/yuanmao/wideband_re/$yemo/$day')
-#os.system('mkdir -p /data1/home/yuanmao/wideband_re/fits_file/$yemo/$day')
-#os.system('mkdir -p /data1/home/yuanmao/wideband_re/png/$yemo')
-os.system('mkdir -p /home/yuanmao/M31_rfi/$yemo')
+os.system('mkdir -p /home/yuanmao/rfi/$yemo')
 channel_bad=[]
 day_ra_dec=[]
 day_mjd=[]
 
-##os.system('find /data2/wideband/psr_2017/$path/$day/ -name "*drifting*_0-1GHz_*.fits" -exec basename {} \; >/data1/home/yuanmao/wideband_re/shell/bandpass_${yemo}${day}.list')
-os.system('find $path -name "*M01*.fits" -exec basename {} \; >/home/yuanmao/M31_rfi/fitslist/${yemo}.list')
-os.system('sort -d /home/yuanmao/M31_rfi/fitslist/${yemo}.list -o /home/yuanmao/M31_rfi/fitslist/${yemo}.list')
-#print ('Begin to get bandpass as a 32768*2800 data set')
+os.system('find $path -name "*M01*.fits" -exec basename {} \; >/home/yuanmao/rfi/fitslist/${yemo}.list')
+os.system('sort -d /home/yuanmao/rfi/fitslist/${yemo}.list -o /home/yuanmao/rfi/fitslist/${yemo}.list')
 
+#print ('Begin to get bandpass as a 32768*2800 data set')
 def smooth(sig,threshold = 3, level=8, wavelet='db8'):
     sigma = sig.std()
     dwtmatr = pywt.wavedec(data=sig, wavelet=wavelet, level=level)
@@ -47,7 +45,7 @@ def smooth(sig,threshold = 3, level=8, wavelet='db8'):
     noises = sig - smoothed_sig
     return smoothed_sig, noises
 count=0
-for name in open('/home/yuanmao/M31_rfi/fitslist/%s.list'%(yemo), 'r'):
+for name in open('/home/yuanmao/rfi/fitslist/%s.list'%(yemo), 'r'):
     print (name)
     filename = '%s'%(path) + name
     filename=filename.replace("\n","")
@@ -153,6 +151,6 @@ ax4.text(1.1 * (left + right),0.5 * (top+bottom),'Apperence rate of RFI',
 #ax4.set_xticks([0,0.5,1])
 #ax4.set_xticklabels([0,0.5,1])
 ax4.set_ylim(0,len(nos_t))
-np.savetxt('/home/yuanmao/M31_rfi/%s/a_badchannenl_rate.txt'%(yemo),nos_t)
-plt.savefig('/home/yuanmao/M31_rfi/%s/a_rfi_stat.png'%(yemo),dpi=800)
+np.savetxt('/home/yuanmao/rfi/%s/a_badchannenl_rate.txt'%(yemo),nos_t)
+plt.savefig('/home/yuanmao/rfi/%s/a_rfi_stat.png'%(yemo),dpi=800)
 
